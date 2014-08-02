@@ -6,7 +6,7 @@ extern crate piston;
 extern crate sdl2_game_window;
 extern crate opengl_graphics;
 
-use std::cmp::{max, min};
+use std::cmp::{max, min}; //use for edge behav
 
 use opengl_graphics::{
     Gl,
@@ -22,7 +22,7 @@ use piston::{
     Render,
     Update,
 };
-
+//for random jitter
 use std::rand;
 use std::rand::Rng;
 
@@ -43,10 +43,8 @@ pub enum Direction {
 }
 
 pub struct GameState {
-    pub x: int,
-    pub y: int,
-    pub max_x: int,
-    pub max_y: int,
+    pub x: int, pub y: int,
+    pub max_x: int, pub max_y: int,
 
     pub edge_behav: bool, //false-stop, true-wrap
     pub jitter_behav: bool, //true-jitters
@@ -91,7 +89,7 @@ impl GameState {
     pub fn jitter(&mut self) {
         if self.jitter_behav {
             let mut rng = rand::task_rng();
-            let r = rng.gen::<uint>() % 4;
+            let r = rng.gen::<uint>() % 4; // %4 trick to get range 0-3
             match r {
                 0 => {self.mov(1, 0)},
                 1 => {self.mov(-1, 0)},
@@ -133,7 +131,7 @@ fn main() {
                 c.rgb(1.0, 1.0, 1.0).draw(gl);
                 c.rect((game.x * BLOCK_SIZE) as f64, (game.y * BLOCK_SIZE) as f64, BLOCK_SIZE as f64, BLOCK_SIZE as f64).rgb(1.0, 0.0, 0.0).draw(gl);
             },
-            
+
             KeyPress(args) => {
                 match args.key {
                     piston::keyboard::Up => {game.next_mov = Up},

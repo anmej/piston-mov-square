@@ -26,15 +26,15 @@ use piston::{
 use std::rand;
 use std::rand::Rng;
 
-pub static GRID_HEIGHT: int = 20;
-pub static GRID_WIDTH: int = 20;
+pub static GRID_HEIGHT: int = 5;
+pub static GRID_WIDTH: int = 5;
 
-pub static BLOCK_SIZE: int = 20;
+pub static BLOCK_SIZE: int = 100;
 
 pub static WINDOW_HEIGHT: int = GRID_HEIGHT * BLOCK_SIZE;
 pub static WINDOW_WIDTH: int = GRID_WIDTH * BLOCK_SIZE;
 
-pub enum Direction {
+enum Direction {
     Up,
     Down,
     Left,
@@ -42,7 +42,7 @@ pub enum Direction {
     Stop
 }
 
-pub struct GameState {
+struct GameState {
     pub x: int, pub y: int,
     pub max_x: int, pub max_y: int,
 
@@ -129,7 +129,15 @@ fn main() {
                 gl.viewport(0, 0, args.width as i32, args.height as i32);
                 let c = Context::abs(args.width as f64, args.height as f64);
                 c.rgb(1.0, 1.0, 1.0).draw(gl);
-                c.rect((game.x * BLOCK_SIZE) as f64, (game.y * BLOCK_SIZE) as f64, BLOCK_SIZE as f64, BLOCK_SIZE as f64).rgb(1.0, 0.0, 0.0).draw(gl);
+                c.square(
+                        (game.x * BLOCK_SIZE) as f64,
+                        (game.y * BLOCK_SIZE) as f64,
+                        BLOCK_SIZE as f64
+                    )
+                    .margin(10.0)
+                    .border_radius(10.0)
+                    .rgb(1.0, 0.0, 0.0)
+                    .draw(gl);
             },
 
             KeyPress(args) => {
@@ -145,12 +153,12 @@ fn main() {
             }
 
             KeyRelease(args) => {
-                match args.key {
-                    piston::keyboard::Up => {game.next_mov = Stop},
-                    piston::keyboard::Down => {game.next_mov = Stop},
-                    piston::keyboard::Left => {game.next_mov = Stop},
-                    piston::keyboard::Right => {game.next_mov = Stop},
-                    _ => {}
+                game.next_mov = match args.key {
+                      piston::keyboard::Up
+                    | piston::keyboard::Down
+                    | piston::keyboard::Left
+                    | piston::keyboard::Right => Stop,
+                    _ => game.next_mov
                 }
             }
 

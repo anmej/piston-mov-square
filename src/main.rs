@@ -1,4 +1,4 @@
-
+//MOVE SQUARE
 #![feature(globs)] //can use foo::*;
 
 extern crate graphics;
@@ -11,17 +11,29 @@ use std::cmp::{max, min}; //use for edge behav
 use opengl_graphics::{
     Gl,
 };
-use sdl2_game_window::GameWindowSDL2;
+use sdl2_game_window::WindowSDL2;
 use graphics::*;
 use piston::{
-    GameIterator,
-    GameIteratorSettings,
-    GameWindowSettings,
-    KeyPress,
-    KeyRelease,
+    EventIterator,
+    EventSettings,
+    WindowSettings,
+    Input,
     Render,
-    Update,
+    Update
 };
+
+use piston::input::keyboard::{
+    Up, Down, Left, Right,
+    W, J
+
+};
+
+use piston::input::{
+    Keyboard,
+    Press,
+    Release
+};
+
 //for random jitter
 use std::rand;
 use std::rand::Rng;
@@ -35,10 +47,10 @@ pub static WINDOW_HEIGHT: int = GRID_HEIGHT * BLOCK_SIZE;
 pub static WINDOW_WIDTH: int = GRID_WIDTH * BLOCK_SIZE;
 
 enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
+    UpDir,
+    DownDir,
+    LeftDir,
+    RightDir,
     Stop
 }
 
@@ -102,16 +114,18 @@ impl GameState {
 }
 
 fn main() {
-    let mut window = GameWindowSDL2::new(
-        GameWindowSettings {
+    let mut window = WindowSDL2::new(
+        piston::shader_version::opengl::OpenGL_3_2,
+        WindowSettings {
             title: "moving square".to_string(),
             size: [WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32],
             fullscreen: false,
             exit_on_esc: true,
+            samples: 0
         }
     );
 
-    let game_iter_settings = GameIteratorSettings {
+    let event_settings = EventSettings {
             updates_per_second: 120,
             max_frames_per_second: 60,
         };
@@ -123,7 +137,7 @@ fn main() {
     let mut jitter_counter: uint = 11;
     let mut slide_counter: uint = 11;
 
-    for event in GameIterator::new(&mut window, &game_iter_settings) {
+    for event in EventIterator::new(&mut window, &event_settings) {
         match event {
             Render(args) => {
                 gl.viewport(0, 0, args.width as i32, args.height as i32);
@@ -140,25 +154,22 @@ fn main() {
                     .draw(gl);
             },
 
-            KeyPress(args) => {
-                match args.key {
-                    piston::keyboard::Up => {game.next_mov = Up},
-                    piston::keyboard::Down => {game.next_mov = Down},
-                    piston::keyboard::Left => {game.next_mov = Left},
-                    piston::keyboard::Right => {game.next_mov = Right},
-                    piston::keyboard::W => {game.change_edge_behav()},
-                    piston::keyboard::J => {game.change_jitter_behav()},
+            Input(Press(Keyboard(key))) => {
+                match key {
+                    Up => {game.next_mov = UpDir},
+                    Down => {game.next_mov = DownDir},
+                    Left => {game.next_mov = LeftDir},
+                    Right => {game.next_mov = RightDir},
+                    W => {game.change_edge_behav()},
+                    J => {game.change_jitter_behav()},
                     _ => {}
                 }
             }
 
-            KeyRelease(args) => {
-                game.next_mov = match args.key {
-                      piston::keyboard::Up
-                    | piston::keyboard::Down
-                    | piston::keyboard::Left
-                    | piston::keyboard::Right => Stop,
-                    _ => game.next_mov
+            Input(Release(Keyboard(key))) => {
+                game.next_mov = match key {
+                      Up | Down | Left | Right => Stop,
+                      _ => game.next_mov
                 }
             }
 
@@ -170,10 +181,10 @@ fn main() {
                 if slide_counter == 12 {
                     slide_counter = 0;
                     match game.next_mov {
-                        Up => {game.mov(0, -1)},
-                        Down => {game.mov(0, 1)},
-                        Left => {game.mov(-1, 0)},
-                        Right => {game.mov(1,0)},
+                        UpDir => {game.mov(0, -1)},
+                        DownDir => {game.mov(0, 1)},
+                        LeftDir => {game.mov(-1, 0)},
+                        RightDir => {game.mov(1,0)},
                         _ => {}
                     }
                 }
